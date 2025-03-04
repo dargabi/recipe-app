@@ -2,64 +2,6 @@
 import React from 'react';
 import './RecipeCard.css';
 
-// Función para traducir etiquetas de salud comunes
-const translateHealthLabel = (label) => {
-  const translations = {
-    'Vegetarian': 'Vegetariano',
-    'Vegan': 'Vegano', 
-    'Peanut-Free': 'Sin Maní',
-    'Tree-Nut-Free': 'Sin Frutos Secos',
-    'Sugar-Free': 'Sin Azúcar',
-    'Alcohol-Free': 'Sin Alcohol',
-    'Gluten-Free': 'Sin Gluten',
-    'Dairy-Free': 'Sin Lácteos',
-    'Egg-Free': 'Sin Huevo',
-    'Soy-Free': 'Sin Soja',
-    'Fish-Free': 'Sin Pescado',
-    'Shellfish-Free': 'Sin Mariscos',
-    'Paleo': 'Paleo',
-    'Keto': 'Keto',
-    'Low-Sugar': 'Bajo en Azúcar',
-    'No oil added': 'Sin Aceite Añadido',
-    'Low-Fat': 'Bajo en Grasa',
-    'Low-Carb': 'Bajo en Carbohidratos',
-    'Low-Sodium': 'Bajo en Sodio',
-    'Low-Potassium': 'Bajo en Potasio',
-    'Kosher': 'Kosher',
-    'Alcohol-Cocktail': 'Cóctel con Alcohol',
-    'Crustacean-Free': 'Sin Crustáceos',
-    'Red-Meat-Free': 'Sin Carne Roja',
-    'Lupine-Free': 'Sin Lupino',
-    'Mollusk-Free': 'Sin Moluscos',
-    'Mustard-Free': 'Sin Mostaza',
-    'Wheat-Free': 'Sin Trigo',
-    'Sesame-Free': 'Sin Sésamo',
-    'Celery-Free': 'Sin Apio',
-    'FODMAP-Free': 'Sin FODMAP',
-    'Pork-Free': 'Sin Cerdo',
-    'Immuno-Supportive': 'Apoyo Inmunológico',
-    'Kidney-Friendly': 'Amigable con Riñones',
-    'Mediterranean': 'Mediterráneo',
-    'Sulfite-Free': 'Sin Sulfitos'
-  };
-  
-  return translations[label] || label;
-};
-
-// Función para traducir etiquetas de dieta comunes
-const translateDietLabel = (label) => {
-  const translations = {
-    'Balanced': 'Equilibrado',
-    'High-Protein': 'Alto en Proteínas',
-    'High-Fiber': 'Alto en Fibra',
-    'Low-Fat': 'Bajo en Grasa',
-    'Low-Carb': 'Bajo en Carbohidratos',
-    'Low-Sodium': 'Bajo en Sodio'
-  };
-  
-  return translations[label] || label;
-};
-
 const RecipeCard = ({ recipe }) => {
   return (
     <div className="recipe-card">
@@ -98,14 +40,14 @@ const RecipeCard = ({ recipe }) => {
         </div>
         
         <div className="recipe-tags">
-          {recipe.healthLabels.slice(0, 3).map((label, index) => (
+          {recipe.healthLabels && recipe.healthLabels.slice(0, 3).map((label, index) => (
             <span key={index} className="tag health-tag">
-              {translateHealthLabel(label)}
+              {label}
             </span>
           ))}
-          {recipe.dietLabels.slice(0, 2).map((label, index) => (
+          {recipe.dietLabels && recipe.dietLabels.slice(0, 2).map((label, index) => (
             <span key={index} className="tag diet-tag">
-              {translateDietLabel(label)}
+              {label}
             </span>
           ))}
         </div>
