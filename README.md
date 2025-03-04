@@ -1,12 +1,61 @@
-# React + Vite
+# Diagrama
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+```mermaid
+graph TB
+    User((User))
 
-Currently, two official plugins are available:
+    subgraph "Recipe Application"
+        subgraph "Frontend Container"
+            WebApp["Web Application<br>(React + Vite)"]
+            
+            subgraph "Core Components"
+                AppComponent["App Component<br>(React)"]
+                MainComponent["Main Component<br>(React)"]
+            end
+            
+            subgraph "UI Components"
+                SearchBar["SearchBar Component<br>(React)"]
+                RecipeList["RecipeList Component<br>(React)"]
+                RecipeCard["RecipeCard Component<br>(React)"]
+                Filters["Filters Component<br>(React)"]
+            end
+            
+            subgraph "State Management"
+                ThemeState["Theme Manager<br>(React useState)"]
+                RecipeState["Recipe State<br>(React useState)"]
+                FilterState["Filter State<br>(React useState)"]
+            end
+        end
+    end
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+    subgraph "External Services"
+        SpoonacularAPI["Spoonacular API<br>(REST API)"]
+    end
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+    %% User interactions
+    User -->|"Interacts with"| WebApp
+    
+    %% Main component relationships
+    WebApp -->|"Renders"| AppComponent
+    AppComponent -->|"Renders"| MainComponent
+    
+    %% UI Component relationships
+    MainComponent -->|"Contains"| SearchBar
+    MainComponent -->|"Contains"| RecipeList
+    MainComponent -->|"Contains"| Filters
+    RecipeList -->|"Renders"| RecipeCard
+    
+    %% State management
+    AppComponent -->|"Manages"| ThemeState
+    AppComponent -->|"Manages"| RecipeState
+    AppComponent -->|"Manages"| FilterState
+    
+    %% External API interactions
+    AppComponent -->|"Fetches recipes"| SpoonacularAPI
+    AppComponent -->|"Fetches nutrition"| SpoonacularAPI
+    
+    %% State to component relationships
+    RecipeState -->|"Updates"| RecipeList
+    FilterState -->|"Updates"| Filters
+    ThemeState -->|"Updates"| AppComponent
+```
