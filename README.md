@@ -49,6 +49,7 @@ Para instalar y ejecutar la aplicación localmente, sigue estos pasos:
 
 ---
 
+## Diagrama
 
 
 ```mermaid
@@ -110,3 +111,4 @@ graph TB
   FilterState -->|"Updates"| Filters
   ThemeState -->|"Updates"| AppComponent
 ```
+---
