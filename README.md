@@ -56,8 +56,7 @@ graph TB
   RecipeState -->|"Updates"| RecipeList
   FilterState -->|"Updates"| Filters
   ThemeState -->|"Updates"| AppComponent
-
---
+```
 ## Instalación
 Para instalar y ejecutar la aplicación localmente, sigue estos pasos:
 
