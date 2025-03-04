@@ -1,0 +1,60 @@
+/* src/App.css */
+.app {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .app-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  
+  .app-header h1 {
+    color: #e67e22;
+    font-size: 3rem;
+    margin-bottom: 0;
+  }
+  
+  .app-header p {
+    color: #7f8c8d;
+    font-size: 1.2rem;
+  }
+  
+  .app-main {
+    min-height: 70vh;
+  }
+  
+  .loading {
+    text-align: center;
+    margin: 50px;
+    font-size: 1.2rem;
+    color: #7f8c8d;
+  }
+  
+  .error {
+    text-align: center;
+    margin: 50px;
+    padding: 20px;
+    background-color: #ffebee;
+    color: #c0392b;
+    border-radius: 8px;
+  }
+  
+  .app-footer {
+    margin-top: 50px;
+    text-align: center;
+    color: #95a5a6;
+    font-size: 0.9rem;
+  }
+  
+  @media (max-width: 768px) {
+    .app {
+      padding: 10px;
+    }
+    
+    .app-header h1 {
+      font-size: 2rem;
+    }
+  }
