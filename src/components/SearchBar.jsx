@@ -28,6 +28,7 @@ const SearchBar = ({ onSearch }) => {
       </form>
       <div className="search-tips">
         <p>Consejo: Separa múltiples ingredientes con comas</p>
+        <p>Consejo: Busca los ingredientes en inglés (ejemplo: tomato, onion, garlic)</p>
       </div>
     </div>
   );
