@@ -9,21 +9,74 @@
  * - Lista de ingredientes
  * - Enlace a la receta completa
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaStar, FaRegStar, FaFire, FaUtensils, FaClock, FaUsers, FaLeaf, FaAppleAlt, FaBreadSlice, FaOilCan } from 'react-icons/fa';
 
-const RecipeCard = ({ recipe, toggleFavorite, isFavorite }) => {
+const RecipeCard = ({ recipe, toggleFavorite, isFavorite, onImageError }) => {
   // Estados del componente - Definidos antes de cualquier lógica condicional (regla de hooks)
   const [showNutrition, setShowNutrition] = useState(false); // Controla la visibilidad del panel nutricional
   const [imageError, setImageError] = useState(false);       // Detecta errores en la carga de la imagen
+
+  // Manejador de errores para cuando una imagen no se puede cargar
+  const handleImageError = () => {
+    setImageError(true);
+    // Si se proporcionó un callback onImageError, notificamos al componente padre
+    if (onImageError && typeof onImageError === 'function' && recipe) {
+      onImageError(recipe);
+    }
+  };
+
+  // Comprobamos si la imagen tiene problemas conocidos o características que indiquen que no es válida
+  // SIEMPRE debemos declarar los hooks en el nivel superior, antes de cualquier return condicional
+  useEffect(() => {
+    // Solo ejecutamos la validación si tenemos una receta
+    if (!recipe) return;
+    
+    const checkImageValidity = () => {
+      // Lista de patrones problemáticos conocidos en URLs de imágenes
+      const problematicPatterns = [
+        'no-disponible',
+        'no-available',
+        'not-available',
+        'no-image',
+        'missing-image',
+        'placeholder',
+        'default.jpg',
+        'default.png',
+        'undefined',
+        'null'
+      ];
+
+      // Si no hay imagen o la URL no es válida (muy corta o no es https)
+      if (!recipe.image || 
+          typeof recipe.image !== 'string' || 
+          recipe.image.length < 10 || 
+          !recipe.image.startsWith('https://')) {
+        handleImageError();
+        return;
+      }
+
+      // Comprobamos si contiene alguno de los patrones problemáticos
+      for (const pattern of problematicPatterns) {
+        if (recipe.image.toLowerCase().includes(pattern)) {
+          handleImageError();
+          return;
+        }
+      }
+    };
+    
+    checkImageValidity();
+  }, [recipe, onImageError]); // Agregamos onImageError como dependencia
 
   // Manejo de error si no hay datos de receta
   if (!recipe) {
     return <div className="bg-red-100 dark:bg-red-900/20 p-5 rounded-xl shadow text-red-500 dark:text-red-400 text-center">Error: Datos de receta no disponibles</div>;
   }
-
-  // Manejador de errores para cuando una imagen no se puede cargar
-  const handleImageError = () => setImageError(true);
+  
+  // Si hay error en la imagen y proporcionamos onImageError, no renderizamos nada
+  if (imageError && onImageError) {
+    return null;
+  }
 
   return (
     <div className="recipe-card animate-fade-in">

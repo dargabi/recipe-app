@@ -487,11 +487,51 @@ function App() {
      * de la receta como en sus ingredientes.
      */
     const filterBackupRecipesByIngredients = (searchQuery) => {
-        console.log('Filtrando recetas de respaldo para:', searchQuery);
+        // Filtrando recetas de respaldo
         
-        // Si no hay búsqueda, devolvemos todas las recetas de respaldo
+        // Primero filtramos para eliminar recetas con imágenes problemáticas o inválidas
+        const validRecipes = BACKUP_RECIPES.filter(item => {
+            // Verificar si la receta y su imagen existen
+            if (!item || !item.recipe || !item.recipe.image) {
+                return false;
+            }
+            
+            const imageUrl = item.recipe.image.toLowerCase();
+            
+            // Verificar si es una URL válida
+            if (typeof imageUrl !== 'string' || 
+                imageUrl.length < 10 || 
+                !imageUrl.startsWith('https://')) {
+                return false;
+            }
+            
+            // Lista de patrones problemáticos conocidos en URLs de imágenes
+            const problematicPatterns = [
+                'no-disponible',
+                'no-available',
+                'not-available',
+                'no-image',
+                'missing-image',
+                'placeholder',
+                'default.jpg',
+                'default.png',
+                'undefined',
+                'null'
+            ];
+            
+            // Verificar si la URL contiene alguno de los patrones problemáticos
+            for (const pattern of problematicPatterns) {
+                if (imageUrl.includes(pattern)) {
+                    return false;
+                }
+            }
+            
+            return true;
+        });
+        
+        // Si no hay búsqueda, devolvemos todas las recetas de respaldo válidas
         if (!searchQuery || searchQuery.trim() === '') {
-            return BACKUP_RECIPES;
+            return validRecipes;
         }
         
         // Procesamos los términos de búsqueda:
@@ -503,7 +543,7 @@ function App() {
         
         // Aplicamos lógica de filtrado: una receta coincide si al menos uno de los términos
         // de búsqueda aparece en su título o en alguno de sus ingredientes
-        return BACKUP_RECIPES.filter(recipeItem => {
+        return validRecipes.filter(recipeItem => {
             const recipe = recipeItem.recipe;
             
             // Comprobamos coincidencia en el título de la receta
@@ -560,7 +600,7 @@ function App() {
             // Codificamos los ingredientes para la URL
             const encodedIngredients = encodeURIComponent(ingredients);
             
-            console.log('Realizando petición a API...');
+            // Realizando petición a API
             const response = await fetch(
                 `https://api.spoonacular.com/recipes/complexSearch?query=${encodedIngredients}&addRecipeInformation=true&fillIngredients=true&apiKey=${API_KEY}&number=12`
             );
@@ -570,7 +610,7 @@ function App() {
                 
                 // Manejo específico para error 402 (Payment Required)
                 if (response.status === 402) {
-                    console.log('Límite de API alcanzado, usando datos de respaldo...');
+                    // Límite de API alcanzado, usando datos de respaldo
                     // Filtrar recetas de respaldo según los ingredientes buscados
                     const filteredBackupRecipes = filterBackupRecipesByIngredients(ingredients);
                     
@@ -588,7 +628,7 @@ function App() {
             }
             
             const data = await response.json();
-            console.log('Datos recibidos de API:', data);
+
             
             // Verificamos si hay resultados
             if (!data.results || data.results.length === 0) {
@@ -598,9 +638,42 @@ function App() {
             }
             
             // Filtrar recetas que tienen una URL de imagen válida
-            const recipesWithImages = data.results.filter(recipe => 
-                recipe && recipe.image && recipe.image.startsWith('https://')
-            );
+            const recipesWithImages = data.results.filter(recipe => {
+                // Verificar si la receta y su imagen existen
+                if (!recipe || !recipe.image) return false;
+                
+                const imageUrl = recipe.image.toLowerCase();
+                
+                // Verificar si es una URL válida
+                if (typeof imageUrl !== 'string' || 
+                    imageUrl.length < 10 || 
+                    !imageUrl.startsWith('https://')) {
+                    return false;
+                }
+                
+                // Lista de patrones problemáticos conocidos en URLs de imágenes
+                const problematicPatterns = [
+                    'no-disponible',
+                    'no-available',
+                    'not-available',
+                    'no-image',
+                    'missing-image',
+                    'placeholder',
+                    'default.jpg',
+                    'default.png',
+                    'undefined',
+                    'null'
+                ];
+                
+                // Verificar si la URL contiene alguno de los patrones problemáticos
+                for (const pattern of problematicPatterns) {
+                    if (imageUrl.includes(pattern)) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
 
             if (recipesWithImages.length === 0) {
                 setError('No se encontraron recetas con imágenes disponibles. ¡Intenta con otros ingredientes!');
@@ -614,7 +687,7 @@ function App() {
             // Obtener información nutricional para cada receta
             for (const recipe of recipesWithImages) {
                 try {
-                    console.log('Procesando receta:', recipe.title, 'ID:', recipe.id);
+
                     
                     // Validamos que la receta tenga los campos necesarios
                     if (!recipe.title || !recipe.id) {
@@ -664,7 +737,46 @@ function App() {
                         }
                     };
                     
-                    recipesWithNutrition.push(formattedRecipe);
+                    // Verificamos una última vez que la imagen sea válida antes de agregar la receta
+                    const imageUrl = formattedRecipe.recipe.image.toLowerCase();
+                    let imageValid = true;
+                    
+                    // Lista de patrones problemáticos
+                    const problematicPatterns = [
+                        'no-disponible',
+                        'no-available',
+                        'not-available',
+                        'no-image',
+                        'missing-image',
+                        'placeholder',
+                        'default.jpg',
+                        'default.png',
+                        'undefined',
+                        'null'
+                    ];
+                    
+                    // Verificar URL válida
+                    if (!imageUrl || 
+                        typeof imageUrl !== 'string' || 
+                        imageUrl.length < 10 || 
+                        !imageUrl.startsWith('https://')) {
+                        imageValid = false;
+                    }
+                    
+                    // Verificar patrones problemáticos
+                    if (imageValid) {
+                        for (const pattern of problematicPatterns) {
+                            if (imageUrl.includes(pattern)) {
+                                imageValid = false;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Si la imagen es válida, agregamos la receta
+                    if (imageValid) {
+                        recipesWithNutrition.push(formattedRecipe);
+                    }
                 } catch (recipeError) {
                     console.error('Error procesando receta individual:', recipeError);
                     // Continuamos con la siguiente receta en caso de error
