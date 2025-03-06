@@ -1,3 +1,8 @@
+## Info
+- **Aplicacion realizada conjuntamente con diferentes modelos de IA**
+
+---
+
 ## Uso
 
 1. **Ingresa los ingredientes** que tienes disponibles en la barra de búsqueda.
