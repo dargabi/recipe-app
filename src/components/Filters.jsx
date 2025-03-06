@@ -57,14 +57,6 @@ function Filters({ onFilterChange }) {
           <FaFilter className="text-orange-500" /> 
           Filtros avanzados
         </h3>
-        <button 
-          onClick={clearAllFilters}
-          className="button-secondary text-sm flex items-center gap-1 py-1 px-3"
-          aria-label="Limpiar todos los filtros"
-        >
-          <FaRedo className="text-gray-500" />
-          Limpiar filtros
-        </button>
       </div>
       
       {/* Grid con los filtros de búsqueda */}

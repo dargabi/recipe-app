@@ -50,7 +50,7 @@ Para instalar y ejecutar la aplicación localmente, sigue estos pasos:
    npm run dev
    ```
 
-   La aplicación estará disponible en [http://localhost:3000](http://localhost:3000).
+   La aplicación estará disponible en [http://localhost:5173](http://localhost:5173).
 
 ---
 
