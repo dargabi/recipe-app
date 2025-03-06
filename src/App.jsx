@@ -1,3 +1,17 @@
+/**
+ * Componente App: Componente principal de la aplicación de recetas
+ *
+ * Este componente coordina toda la funcionalidad principal de la aplicación:
+ * - Gestión de búsqueda de recetas por ingredientes
+ * - Filtrado de resultados por múltiples criterios
+ * - Manejo de favoritos (guardar y recuperar)
+ * - Cambio de tema claro/oscuro
+ * - Manejo de estados de carga y errores
+ * - Procesamiento de datos de recetas y nutrición
+ *
+ * La aplicación utiliza React Hooks para la gestión de estado y efectos secundarios,
+ * e implementa una interfaz responsiva con soporte para temas claro y oscuro.
+ */
 import React, { useState, useEffect } from 'react';
 import SearchBar from './components/SearchBar';
 import RecipeList from './components/RecipeList';
@@ -175,40 +189,64 @@ const BACKUP_RECIPES = [
 ];
 
 function App() {
-    // Estado para almacenar las recetas obtenidas
+    /**
+     * GESTIÓN DE ESTADOS
+     * La aplicación utiliza diversos estados para manejar diferentes aspectos de la funcionalidad
+     */
+    
+    // Estado para almacenar las recetas obtenidas de la API o datos de respaldo
+    // Este es el conjunto completo de recetas sin filtrar
     const [recipes, setRecipes] = useState([]);
     
-    // Estado para almacenar las recetas filtradas
+    // Estado para almacenar las recetas después de aplicar filtros
+    // Este conjunto es el que finalmente se muestra al usuario
     const [filteredRecipes, setFilteredRecipes] = useState([]);
     
-    // Estado de carga mientras se obtienen las recetas
+    // Estado que indica si hay una operación de búsqueda o carga en curso
+    // Controla la visualización de indicadores de carga y deshabilita controles durante la búsqueda
     const [isLoading, setIsLoading] = useState(false);
     
-    // Estado para manejar posibles errores
+    // Estado para manejar y mostrar mensajes de error al usuario
+    // Se establece cuando ocurre un problema con la API o el procesamiento de datos
     const [error, setError] = useState(null);
     
-    // Estado para manejar el tema (claro u oscuro)
+    // Estado para controlar el tema visual de la aplicación (claro u oscuro)
+    // Afecta a las clases CSS aplicadas a través de Tailwind
     const [theme, setTheme] = useState('light');
     
-    // Estado para manejar los filtros seleccionados
+    // Estado para manejar los criterios de filtrado seleccionados por el usuario
+    // Cada propiedad corresponde a un tipo diferente de filtro aplicable a las recetas
     const [filters, setFilters] = useState({
-        time: '',
-        diet: '',
-        sort: '',
-        excludedIngredients: '',
-        maxIngredients: ''
+        time: '',              // Tiempo máximo de preparación en minutos
+        diet: '',              // Tipo de dieta (vegetariano, vegano, etc.)
+        sort: '',              // Criterio de ordenación (tiempo, calorías)
+        excludedIngredients: '', // Ingredientes que el usuario quiere excluir
+        maxIngredients: ''     // Número máximo de ingredientes permitidos
     });
     
-    // Estado para la animación de rotación del botón de cambio de tema
-    const [isRotating, setIsRotating] = useState(false);
-    
-    // Estado para almacenar recetas favoritas
+    // Estado para almacenar las recetas marcadas como favoritas por el usuario
+    // Se persiste en localStorage para mantenerlas entre sesiones
     const [favorites, setFavorites] = useState([]);
     
-    // Estado para mostrar recetas favoritas
+    // Estado para controlar si se muestran solo las recetas favoritas
+    // Funciona como un filtro adicional sobre los resultados
     const [showFavorites, setShowFavorites] = useState(false);
 
-    // Cambiar el tema de la aplicación
+    /**
+     * EFECTOS (useEffect)
+     * Los efectos gestionan los comportamientos reactivos y efectos secundarios de la aplicación
+     */
+
+    /**
+     * Efecto: Gestión del tema claro/oscuro
+     * 
+     * Este efecto se ejecuta cuando cambia el estado del tema y aplica los cambios
+     * necesarios al DOM para activar el modo oscuro en la aplicación.
+     * 
+     * - Agrega/elimina la clase 'dark' al elemento HTML raíz para que Tailwind
+     *   aplique los estilos correspondientes al tema seleccionado
+     * - Mantiene compatibilidad con posible código antiguo mediante atributos data-*
+     */
     useEffect(() => {
         // Aplica la clase 'dark' al HTML para activar las variantes dark: de Tailwind
         if (theme === 'dark') {
@@ -216,129 +254,201 @@ function App() {
         } else {
             document.documentElement.classList.remove('dark');
         }
-        // Mantiene la compatibilidad con código antiguo
+        // Mantiene la compatibilidad con código antiguo 
         document.documentElement.setAttribute('data-theme', theme);
-    }, [theme]);
+    }, [theme]); // Solo se ejecuta cuando cambia el tema
     
-    // Cargar favoritos desde localStorage al iniciar
+    /**
+     * Efecto: Cargar favoritos desde localStorage
+     * 
+     * Este efecto se ejecuta una sola vez al montar el componente y carga
+     * las recetas favoritas guardadas previamente en el almacenamiento local.
+     * Permite persistencia de favoritos entre sesiones de navegación.
+     */
     useEffect(() => {
         const storedFavorites = localStorage.getItem('favoriteRecipes');
         if (storedFavorites) {
             setFavorites(JSON.parse(storedFavorites));
         }
-    }, []);
+    }, []); // Array de dependencias vacío indica que solo se ejecuta al montar el componente
 
-    // Aplicar los filtros a las recetas cuando cambian las recetas o los filtros
+    /**
+     * Efecto: Sistema de filtrado de recetas
+     * 
+     * Este efecto aplica todos los filtros seleccionados por el usuario a las recetas.
+     * Se ejecuta cada vez que cambia el conjunto de recetas o cualquiera de los filtros.
+     * Implementa filtrado por tiempo, dieta, ingredientes excluidos, número de ingredientes,
+     * y ordenamiento por diferentes criterios.
+     */
     useEffect(() => {
-        let result = [...recipes];  // Copia de las recetas
+        // Creamos una copia del array de recetas para no modificar el original
+        let result = [...recipes];
 
         console.log('Aplicando filtros:', filters);
 
-        // Filtrar por tiempo
+        // FILTRO 1: Filtrar por tiempo máximo de preparación
         if (filters.time) {
             result = result.filter(item => {
+                // Solo incluye recetas cuyo tiempo de preparación sea menor o igual al filtro
                 const timeMatch = item.recipe.totalTime > 0 && item.recipe.totalTime <= parseInt(filters.time);
-                return timeMatch;  // Retorna las recetas que coinciden con el tiempo
+                return timeMatch;
             });
         }
 
-        // Filtrar por dieta
+        // FILTRO 2: Filtrar por tipo de dieta (vegetariano, vegano, etc.)
         if (filters.diet) {
             console.log('Filtrando por dieta:', filters.diet);
             result = result.filter(item => {
                 console.log('Comprobando receta:', item.recipe.label);
                 console.log('Etiquetas:', item.recipe.healthLabels);
+                // Comprueba si la receta tiene la etiqueta de dieta seleccionada
                 const dietMatch = item.recipe.healthLabels.includes(filters.diet);
                 console.log('¿Coincide?:', dietMatch);
-                return dietMatch;  // Retorna las recetas que coinciden con la dieta
+                return dietMatch;
             });
         }
 
-        // Filtrar por ingredientes excluidos
+        // FILTRO 3: Excluir recetas que contengan ingredientes no deseados
         if (filters.excludedIngredients) {
+            // Divide la cadena de ingredientes excluidos en un array y normaliza
             const excludedItems = filters.excludedIngredients.toLowerCase().split(',').map(item => item.trim());
             result = result.filter(item => {
-                // Verificar que ninguno de los ingredientes excluidos esté en la receta
+                // Convierte todos los ingredientes de la receta a minúsculas para comparación sin distinguir mayúsculas
                 const ingredientsLower = item.recipe.ingredientLines.map(ing => ing.toLowerCase());
+                // Devuelve true si NINGÚN ingrediente excluido está presente en la receta
                 return !excludedItems.some(excluded => 
                     ingredientsLower.some(ingredient => ingredient.includes(excluded))
                 );
             });
         }
 
-        // Filtrar por número máximo de ingredientes
+        // FILTRO 4: Filtrar por número máximo de ingredientes
         if (filters.maxIngredients) {
             const maxCount = parseInt(filters.maxIngredients);
             result = result.filter(item => {
+                // Solo incluye recetas con menos ingredientes que el máximo especificado
                 return item.recipe.ingredientLines.length <= maxCount;
             });
         }
 
-
-
-        // Ordenar las recetas
+        // ORDENACIÓN: Ordenar las recetas según criterio seleccionado
         if (filters.sort) {
             result.sort((a, b) => {
                 if (filters.sort === 'time') {
+                    // Ordena de menor a mayor tiempo de preparación
                     return (a.recipe.totalTime || 0) - (b.recipe.totalTime || 0);
                 } else if (filters.sort === 'calories') {
+                    // Ordena de menor a mayor número de calorías
                     return (a.recipe.calories || 0) - (b.recipe.calories || 0);
                 }
-                return 0;  // Si no se selecciona un criterio de ordenación, no hace nada
+                return 0;  // Sin cambios si no hay criterio válido
             });
         }
 
-        // Establecer las recetas filtradas
+        // Actualiza el estado con las recetas filtradas
         setFilteredRecipes(result);
-    }, [recipes, filters]);
+    }, [recipes, filters]); // Se ejecuta cuando cambian las recetas o los filtros
 
-    // Función para alternar entre el tema claro y oscuro
+    /**
+     * FUNCIONES AUXILIARES
+     * Estas funciones implementan la lógica principal de la aplicación
+     */
+
+    /**
+     * Alterna entre el tema claro y oscuro de la aplicación
+     * 
+     * Esta función cambia el estado del tema entre 'light' y 'dark'.
+     * El efecto useEffect asociado al cambio de tema se encarga de aplicar
+     * los cambios en el DOM (clases CSS y atributos data-theme).
+     */
     const toggleTheme = () => {
-        setIsRotating(true);  // Inicia la rotación
-        setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');  // Cambia el tema
-        setTimeout(() => setIsRotating(false), 500);  // Detiene la rotación después de medio segundo
+        setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
     };
     
-    // Función para alternar una receta como favorita
+    /**
+     * Alterna el estado de favorito de una receta
+     * 
+     * @param {Object} recipe - Objeto de receta a marcar/desmarcar como favorita
+     * 
+     * Esta función:
+     * 1. Identifica la receta por su URL o etiqueta (como identificador único)
+     * 2. Agrega o elimina la receta del array de favoritos
+     * 3. Actualiza el localStorage para persistir los cambios entre sesiones
+     */
     const toggleFavorite = (recipe) => {
-        const recipeId = recipe.url || recipe.label;
+        const recipeId = recipe.url || recipe.label; // Identificador único de la receta
+        
         setFavorites(prevFavorites => {
             let newFavorites;
-            // Si ya existe en favoritos, lo eliminamos
+            
+            // Verificamos si la receta ya está en favoritos
             if (prevFavorites.some(fav => (fav.url || fav.label) === recipeId)) {
+                // Si existe, la eliminamos filtrando el array
                 newFavorites = prevFavorites.filter(fav => (fav.url || fav.label) !== recipeId);
             } else {
-                // Si no existe, lo añadimos
+                // Si no existe, la añadimos al array
                 newFavorites = [...prevFavorites, recipe];
             }
-            // Guardar en localStorage
+            
+            // Persistimos los cambios en localStorage
             localStorage.setItem('favoriteRecipes', JSON.stringify(newFavorites));
             return newFavorites;
         });
     };
     
-    // Función para comprobar si una receta está en favoritos
+    /**
+     * Verifica si una receta está marcada como favorita
+     * 
+     * @param {Object} recipe - Objeto de receta a verificar
+     * @returns {boolean} - true si la receta está en favoritos, false en caso contrario
+     */
     const isFavorite = (recipe) => {
-        if (!recipe) return false;
+        if (!recipe) return false; // Protección contra valores nulos o indefinidos
+        
         const recipeId = recipe.url || recipe.label;
         return favorites.some(fav => (fav.url || fav.label) === recipeId);
     };
     
-    // Función para mostrar/ocultar favoritos
+    /**
+     * Alterna la visualización entre todas las recetas y solo las favoritas
+     * 
+     * Esta función cambia el estado showFavorites, que se utiliza para
+     * filtrar las recetas mostradas en la interfaz de usuario.
+     */
     const handleToggleFavorites = () => {
         setShowFavorites(prev => !prev);
     };
 
-    // Función para manejar los cambios en los filtros
+    /**
+     * Actualiza los criterios de filtrado de recetas
+     * 
+     * @param {string} name - Nombre del filtro a actualizar (time, diet, etc.)
+     * @param {string} value - Nuevo valor para el filtro
+     * 
+     * Esta función mantiene la inmutabilidad del estado mediante la creación
+     * de un nuevo objeto con todos los filtros previos y la actualización
+     * del filtro especificado. El efecto useEffect asociado se encarga de 
+     * aplicar los nuevos filtros a las recetas.
+     */
     const handleFilterChange = (name, value) => {
         console.log('Cambio de filtro:', name, value);
         setFilters(prev => ({
-            ...prev,
-            [name]: value  // Actualiza el filtro con el nuevo valor
+            ...prev,            // Mantiene los filtros existentes
+            [name]: value      // Actualiza el filtro especificado (notación de propiedad computada)
         }));
     };
 
-    // Función para obtener la información nutricional de una receta
+    /**
+     * Obtiene información nutricional detallada de una receta desde la API
+     * 
+     * @param {string|number} id - Identificador de la receta en la API de Spoonacular
+     * @returns {Object|null} - Objeto con información nutricional o null si hay error
+     * 
+     * Esta función hace una petición a la API de Spoonacular para obtener
+     * datos nutricionales como calorías, proteínas, carbohidratos, grasas y fibra.
+     * Incluye manejo de errores para evitar fallos en la aplicación cuando la API
+     * no responde correctamente.
+     */
     const fetchNutritionInfo = async (id) => {
         try {
             const API_KEY = "6367909ade22481a856d130bc551ef65";
@@ -351,6 +461,8 @@ function App() {
             }
             
             const data = await response.json();
+            
+            // Convertimos las cadenas a números para facilitar operaciones aritméticas
             return {
                 calories: parseFloat(data.calories),
                 protein: parseFloat(data.protein),
@@ -360,49 +472,76 @@ function App() {
             };
         } catch (error) {
             console.error('Error al obtener información nutricional:', error);
-            return null;
+            return null; // Devolvemos null para indicar que hubo un error
         }
     };
     
-    // Función para filtrar las recetas de respaldo según los ingredientes buscados
+    /**
+     * Filtra las recetas de respaldo (BACKUP_RECIPES) según los términos de búsqueda
+     * 
+     * @param {string} searchQuery - Términos de búsqueda separados por espacios o comas
+     * @returns {Array} - Array de recetas filtradas que coinciden con la búsqueda
+     * 
+     * Esta función se utiliza cuando la API principal no está disponible o ha
+     * alcanzado su límite de peticiones. Busca coincidencias tanto en el título
+     * de la receta como en sus ingredientes.
+     */
     const filterBackupRecipesByIngredients = (searchQuery) => {
         console.log('Filtrando recetas de respaldo para:', searchQuery);
         
+        // Si no hay búsqueda, devolvemos todas las recetas de respaldo
         if (!searchQuery || searchQuery.trim() === '') {
-            return BACKUP_RECIPES; // Si no hay búsqueda, devolvemos todas las recetas de respaldo
+            return BACKUP_RECIPES;
         }
         
-        // Convertimos la búsqueda a minúsculas y separamos por espacios o comas
+        // Procesamos los términos de búsqueda:
+        // 1. Convertimos a minúsculas para búsqueda sin distinción de mayúsculas/minúsculas
+        // 2. Dividimos por espacios o comas (regex: [\s,]+)
+        // 3. Filtramos términos vacíos
         const searchTerms = searchQuery.toLowerCase().split(/[\s,]+/).filter(term => term.length > 0);
-        console.log('Términos de búsqueda:', searchTerms);
+        console.log('Términos de búsqueda procesados:', searchTerms);
         
-        // Filtramos las recetas que contienen al menos uno de los términos de búsqueda
+        // Aplicamos lógica de filtrado: una receta coincide si al menos uno de los términos
+        // de búsqueda aparece en su título o en alguno de sus ingredientes
         return BACKUP_RECIPES.filter(recipeItem => {
             const recipe = recipeItem.recipe;
             
-            // Buscamos en el título
+            // Comprobamos coincidencia en el título de la receta
             if (recipe.label && searchTerms.some(term => recipe.label.toLowerCase().includes(term))) {
-                return true;
+                return true; // Coincidencia encontrada en el título
             }
             
-            // Buscamos en los ingredientes
+            // Comprobamos coincidencia en los ingredientes de la receta
             if (recipe.ingredientLines && recipe.ingredientLines.some(ingredient => 
                 searchTerms.some(term => ingredient.toLowerCase().includes(term))
             )) {
-                return true;
+                return true; // Coincidencia encontrada en algún ingrediente
             }
             
-            // No coincide con ningún término de búsqueda
+            // Si no hay coincidencias ni en título ni en ingredientes, descartamos esta receta
             return false;
         });
     };
 
-    // Función para buscar recetas basadas en los ingredientes
+    /**
+     * FUNCIÓN PRINCIPAL: Busca recetas basadas en los ingredientes proporcionados
+     * 
+     * @param {string} ingredients - Ingredientes separados por comas o espacios
+     * 
+     * Esta función es el núcleo de la aplicación y realiza las siguientes tareas:
+     * 1. Configura estados iniciales (carga, error, filtros)
+     * 2. Realiza la petición a la API de Spoonacular
+     * 3. Maneja errores y situaciones de límite de API
+     * 4. Procesa las recetas recibidas añadiendo información nutricional
+     * 5. Actualiza los estados de la aplicación con los resultados
+     */
     const searchRecipes = async (ingredients) => {
         console.log('Buscando recetas para:', ingredients);
-        setIsLoading(true);  // Muestra la carga de recetas
-        setError(null);  // Resetea el error
-        setFilters({ time: '', diet: '', sort: '', excludedIngredients: '', maxIngredients: '' });  // Resetea los filtros
+        
+        // Inicializamos los estados para una nueva búsqueda
+        setIsLoading(true);                // Activar indicador de carga
+        setError(null);                    // Limpiar errores anteriores
+        setFilters({ time: '', diet: '', sort: '', excludedIngredients: '', maxIngredients: '' });  // Resetear filtros
         
         // Limpiamos anteriores resultados
         setRecipes([]);
@@ -551,8 +690,19 @@ function App() {
         }
     };
 
+    /**
+     * RENDERIZADO DEL COMPONENTE
+     * 
+     * La estructura principal del JSX incluye:
+     * 1. Contenedor principal con soporte para tema claro/oscuro
+     * 2. Cabecera con logo, título y controles (favoritos, tema)
+     * 3. Sección principal con la barra de búsqueda y filtros
+     * 4. Visualización condicional de mensajes de error y estados de carga
+     * 5. Visualización de recetas o mensajes informativos según el estado
+     */
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-white transition-colors duration-300 w-full p-5">
+            {/* CABECERA DE LA APLICACIÓN */}
             <header className="container mx-auto max-w-6xl mb-8">
                 <div className="flex flex-col md:flex-row justify-between items-center mb-6 py-4 border-b border-gray-200 dark:border-gray-700">
                     <div className="flex items-center mb-4 md:mb-0">
@@ -587,19 +737,22 @@ function App() {
             </header>
             
             <main className="container mx-auto max-w-6xl">
+                {/* PANEL DE BÚSQUEDA Y FILTROS */}
                 <div className="mb-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transition-all duration-300">
-                    {/* Barra de búsqueda */}
+                    {/* SearchBar: Componente para buscar recetas por ingredientes */}
                     <SearchBar onSearch={searchRecipes} isLoading={isLoading} />
+                    {/* Filters: Componente para aplicar filtros adicionales a los resultados */}
                     <Filters onFilterChange={handleFilterChange} />
                 </div>
                 
-                {/* Mensajes de error o información */}
+                {/* MENSAJES DE ERROR: Visualización de errores con información contextual */}
                 {error && (
                     <div className="mb-8 p-5 bg-white dark:bg-gray-800 border-l-4 border-red-500 rounded-xl shadow-lg animate-fade-in flex items-start">
                         <FaExclamationTriangle className="text-red-500 text-xl mr-3 mt-1" />
                         <div>
                             <h3 className="font-bold text-red-500 mb-1">Error en la búsqueda</h3>
                             <p className="text-gray-700 dark:text-gray-300">{error}</p>
+                            {/* Mensaje adicional para errores relacionados con el límite de la API */}
                             {error.includes('límite diario') && (
                                 <p className="mt-2 text-gray-600 dark:text-gray-400">Estamos mostrando recetas de respaldo debido a limitaciones del API.</p>
                             )}
@@ -607,12 +760,13 @@ function App() {
                     </div>
                 )}
                 
-                {/* Mostrar estado de carga */}
+                {/* INDICADOR DE CARGA: Muestra esqueletos de carga durante la búsqueda */}
                 {isLoading && <RecipeList isLoading={true} recipes={[]} />}
                 
-                {/* Mensaje cuando no hay resultados */}
+                {/* MENSAJES DE ESTADO VACÍO: Información contextual cuando no hay resultados */}
                 {!isLoading && !error && (
                     (showFavorites && favorites.length === 0) ? (
+                        /* Caso 1: Modo favoritos activado pero no hay recetas guardadas como favoritas */
                         <div className="mb-8 p-5 bg-white dark:bg-gray-800 rounded-xl shadow-lg animate-fade-in flex items-center justify-center">
                             <div className="text-center py-10">
                                 <FaStar className="mx-auto text-4xl text-gray-400 dark:text-gray-600 mb-4" />
@@ -626,6 +780,7 @@ function App() {
                             </div>
                         </div>
                     ) : (
+                        /* Caso 2: Búsqueda sin resultados en modo normal */
                         filteredRecipes.length === 0 && !showFavorites && (
                             <div className="mb-8 p-5 bg-white dark:bg-gray-800 rounded-xl shadow-lg animate-fade-in flex items-center justify-center">
                                 <div className="text-center py-10">
@@ -638,7 +793,7 @@ function App() {
                     )
                 )}
                 
-                {/* Mostrar lista de recetas filtradas o favoritos */}
+                {/* LISTA DE RECETAS: Visualización condicional basada en el modo activo */}
                 {!isLoading && !error && (
                     showFavorites ? 
                         (favorites.length > 0 && 
@@ -658,6 +813,7 @@ function App() {
                 )}
             </main>
             
+            {/* PIE DE PÁGINA: Información sobre la aplicación y créditos */}
             <footer className="container mx-auto max-w-6xl mt-12 mb-6 text-center p-6 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-xl shadow-md">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                     <p className="flex items-center">

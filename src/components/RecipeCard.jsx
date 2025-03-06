@@ -1,22 +1,29 @@
-import React, { useState, useEffect } from 'react';
+/**
+ * Componente RecipeCard: Muestra una tarjeta con la información detallada de una receta
+ *
+ * Este componente presenta visualmente todos los datos de una receta, incluyendo:
+ * - Imagen de la receta (con manejo de errores de carga)
+ * - Título, tiempo de preparación, porciones y calorías
+ * - Etiquetas de salud relevantes (vegetariano, vegano, etc.)
+ * - Información nutricional detallada con gráfico visual
+ * - Lista de ingredientes
+ * - Enlace a la receta completa
+ */
+import React, { useState } from 'react';
 import { FaStar, FaRegStar, FaFire, FaUtensils, FaClock, FaUsers, FaLeaf, FaAppleAlt, FaBreadSlice, FaOilCan } from 'react-icons/fa';
 
 const RecipeCard = ({ recipe, toggleFavorite, isFavorite }) => {
-  // Validar que la receta exista y tenga las propiedades necesarias
+  // Estados del componente - Definidos antes de cualquier lógica condicional (regla de hooks)
+  const [showNutrition, setShowNutrition] = useState(false); // Controla la visibilidad del panel nutricional
+  const [imageError, setImageError] = useState(false);       // Detecta errores en la carga de la imagen
+
+  // Manejo de error si no hay datos de receta
   if (!recipe) {
     return <div className="bg-red-100 dark:bg-red-900/20 p-5 rounded-xl shadow text-red-500 dark:text-red-400 text-center">Error: Datos de receta no disponibles</div>;
   }
 
-  // Estado para manejar la visibilidad de la información nutricional
-  const [showNutrition, setShowNutrition] = useState(false);
-  
-  // Estado para manejar los errores de carga de la imagen
-  const [imageError, setImageError] = useState(false);
-
-  // Función que maneja el error de carga de la imagen
-  const handleImageError = () => {
-    setImageError(true);  // Marca que hubo un error cargando la imagen
-  };
+  // Manejador de errores para cuando una imagen no se puede cargar
+  const handleImageError = () => setImageError(true);
 
   return (
     <div className="recipe-card animate-fade-in">
@@ -206,35 +213,47 @@ const RecipeCard = ({ recipe, toggleFavorite, isFavorite }) => {
   );
 };
 
-// Componente para el gráfico de nutrición
+/**
+ * Componente NutritionChart: Visualiza la distribución de macronutrientes mediante un gráfico circular
+ *
+ * @param {number} protein - Cantidad de proteínas en gramos
+ * @param {number} carbs - Cantidad de carbohidratos en gramos
+ * @param {number} fat - Cantidad de grasas en gramos
+ */
 const NutritionChart = ({ protein, carbs, fat }) => {
-  const total = protein + carbs + fat;
+  // Suma total de macronutrientes para calcular porcentajes
+  const total = protein + carbs + fat || 1; // Evitar división por cero
   
-  // Calcular porcentajes para las variables CSS
+  // Cálculo de porcentajes redondeados para cada macronutriente
   const proteinPercentage = Math.round((protein / total) * 100);
   const carbsPercentage = Math.round((carbs / total) * 100);
-  const fatPercentage = Math.round((fat / total) * 100);
+  const fatPercentage = 100 - proteinPercentage - carbsPercentage; // Asegura que sumen 100%
   
-  // Establecer el estilo con los porcentajes calculados
+  // Variables CSS personalizadas para generar el gráfico con conic-gradient
   const chartStyle = {
     '--protein-percentage': `${proteinPercentage}%`,
     '--carbs-percentage': `${proteinPercentage + carbsPercentage}%`,
   };
 
   return (
-    <div className="relative flex flex-col items-center">
+    <div className="relative flex flex-col items-center" title="Distribución de macronutrientes">
+      {/* Gráfico circular */}
       <div className="w-32 h-32 rounded-full overflow-hidden">
         <div className="nutrition-chart w-full h-full" style={chartStyle}></div>
       </div>
+      
+      {/* Etiqueta central */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="text-gray-800 dark:text-white text-xs font-bold bg-white dark:bg-gray-800 rounded-full w-16 h-16 flex items-center justify-center">
           Macros
         </div>
       </div>
-      <div className="flex gap-2 mt-2 text-xs">
-        <span className="font-bold text-blue-500">{proteinPercentage}%</span>
-        <span className="font-bold text-green-500">{carbsPercentage}%</span>
-        <span className="font-bold text-red-500">{fatPercentage}%</span>
+      
+      {/* Leyenda de porcentajes */}
+      <div className="flex items-center justify-center gap-2 mt-2 text-xs">
+        <span className="font-bold text-blue-500" title="Proteínas">{proteinPercentage}%</span>
+        <span className="font-bold text-green-500" title="Carbohidratos">{carbsPercentage}%</span>
+        <span className="font-bold text-red-500" title="Grasas">{fatPercentage}%</span>
       </div>
     </div>
   );
