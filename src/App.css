@@ -20,14 +20,21 @@
   --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
 .app {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   min-height: 100vh;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   transition: all 0.3s ease;
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%; /* Eliminar max-width para ocupar todo el ancho */
+  margin: 0;   /* Eliminar margen para ocupar toda la pantalla */
   padding: 20px;
 }
 
@@ -36,6 +43,7 @@
   margin-bottom: 40px;
   padding: 2rem;
   background-color: var(--bg-secondary);
+  width: 100%; /* Eliminar max-width para ocupar todo el ancho */
 }
 
 .app-header h1 {
@@ -52,8 +60,8 @@
 
 .app-main {
   min-height: 70vh;
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%; /* Eliminar max-width para ocupar todo el ancho */
+  margin: 0;
   padding: 2rem;
 }
 
@@ -133,8 +141,9 @@
 @media (max-width: 768px) {
   .app {
     padding: 10px;
+    width: 100%; /* Asegurarse de que ocupe todo el ancho en pantallas pequeñas */
   }
-  
+
   .app-header h1 {
     font-size: 2rem;
   }
