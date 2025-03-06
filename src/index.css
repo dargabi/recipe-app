@@ -1,3 +1,136 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Variables CSS personalizadas */
+:root {
+  --primary-gradient: linear-gradient(135deg, #ff9500, #ff5f6d);
+  --secondary-gradient: linear-gradient(135deg, #4facfe, #00f2fe);
+  --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  --card-hover-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+  --transition-standard: all 0.3s ease;
+}
+
+/* Estilos personalizados */
+@layer components {
+  .nutrition-card {
+    @apply bg-white dark:bg-gray-800 rounded-xl p-5 shadow-lg transition-all duration-300;
+  }
+  
+  .nutrition-card:hover {
+    @apply shadow-xl transform -translate-y-1;
+  }
+  
+  .nutrition-chart {
+    @apply relative w-full h-full;
+    background: conic-gradient(#3b82f6 var(--protein-percentage, 30%), 
+                              #10b981 var(--protein-percentage, 30%) var(--carbs-percentage, 60%), 
+                              #ef4444 var(--carbs-percentage, 60%) 100%);
+    border-radius: 50%;
+    overflow: hidden;
+  }
+  
+  .nutrition-chart::after {
+    content: '';
+    @apply absolute top-1/2 left-1/2 bg-white dark:bg-gray-800 rounded-full;
+    width: 60%;
+    height: 60%;
+    transform: translate(-50%, -50%);
+  }
+  
+  .macro-badge {
+    @apply flex items-center gap-2 py-1.5 px-3 rounded-full text-white text-xs font-medium transition-transform overflow-hidden;
+    min-width: 0;
+    width: 100%;
+  }
+  
+  .macro-badge span {
+    @apply truncate;
+    max-width: 130px;
+  }
+  
+  .macro-badge:hover {
+    @apply transform scale-[1.02];
+  }
+  
+  .protein-badge {
+    @apply bg-blue-500;
+  }
+  
+  .carbs-badge {
+    @apply bg-green-500;
+  }
+  
+  .fat-badge {
+    @apply bg-red-500;
+  }
+  
+  .fiber-badge {
+    @apply bg-purple-500;
+  }
+  
+  .recipe-card {
+    @apply bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300;
+  }
+  
+  .recipe-card:hover {
+    @apply transform -translate-y-2;
+  }
+  
+  .tag {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .health-tag {
+    @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100;
+  }
+  
+  .diet-tag {
+    @apply bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100;
+  }
+  
+  .button-primary {
+    @apply py-2 px-4 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold rounded-full transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg;
+  }
+  
+  .button-secondary {
+    @apply py-2 px-4 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-medium rounded-full transition-all duration-300;
+  }
+  
+  /* Animaciones */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse 2s infinite;
+  }
+}
+
+/* Estilos personalizados para scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 dark:bg-gray-800;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-gray-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400 dark:bg-gray-500;
+}
