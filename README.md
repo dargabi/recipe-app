@@ -3,6 +3,11 @@
 
 ---
 
+## GitHub Pages
+- **https://dargabi.github.io/recipe-app/**
+
+---
+
 ## Uso
 
 1. **Ingresa los ingredientes** que tienes disponibles en la barra de búsqueda.
