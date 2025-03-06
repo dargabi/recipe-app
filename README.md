@@ -59,61 +59,71 @@ Para instalar y ejecutar la aplicación localmente, sigue estos pasos:
 
 ```mermaid
 graph TB
-  User((User))
+    User((User))
 
-  subgraph "Recipe Application"
-    subgraph "Frontend Container"
-        WebApp["Web Application (React + Vite)"]
-        
-        subgraph "Core Components"
-            AppComponent["App Component (React)"]
-            MainComponent["Main Component (React)"]
+    subgraph "Frontend Application"
+        subgraph "Core Container"
+            App["App Container<br>(React)"]
+            
+            subgraph "Component Layer"
+                SearchBar["SearchBar Component<br>(React)"]
+                RecipeList["RecipeList Component<br>(React)"]
+                Filters["Filters Component<br>(React)"]
+                RecipeCard["RecipeCard Component<br>(React)"]
+                ThemeManager["Theme Manager<br>(React + TailwindCSS)"]
+                FavoriteManager["Favorite Manager<br>(React + LocalStorage)"]
+            end
+            
+            subgraph "State Management"
+                RecipeState["Recipe State<br>(React Hooks)"]
+                FilterState["Filter State<br>(React Hooks)"]
+                ThemeState["Theme State<br>(React Hooks)"]
+                LoadingState["Loading State<br>(React Hooks)"]
+                ErrorState["Error State<br>(React Hooks)"]
+            end
         end
-        
-        subgraph "UI Components"
-            SearchBar["SearchBar Component (React)"]
-            RecipeList["RecipeList Component (React)"]
-            RecipeCard["RecipeCard Component (React)"]
-            Filters["Filters Component (React)"]
-        end
-        
-        subgraph "State Management"
-            ThemeState["Theme Manager (React useState)"]
-            RecipeState["Recipe State (React useState)"]
-            FilterState["Filter State (React useState)"]
+
+        subgraph "Build System"
+            Vite["Build Tool<br>(Vite)"]
+            TailwindCSS["CSS Framework<br>(TailwindCSS)"]
         end
     end
-  end
 
-  subgraph "External Services"
-    SpoonacularAPI["Spoonacular API (REST API)"]
-  end
+    subgraph "External Services"
+        SpoonacularAPI["Recipe API<br>(Spoonacular)"]
+        LocalStorage["Browser Storage<br>(LocalStorage)"]
+    end
 
-  %% User interactions
-  User -->|"Interacts with"| WebApp
+    %% User interactions
+    User -->|"Interacts with"| App
+    
+    %% Core container relationships
+    App -->|"Manages"| RecipeState
+    App -->|"Manages"| FilterState
+    App -->|"Manages"| ThemeState
+    App -->|"Manages"| LoadingState
+    App -->|"Manages"| ErrorState
 
-  %% Main component relationships
-  WebApp -->|"Renders"| AppComponent
-  AppComponent -->|"Renders"| MainComponent
+    %% Component relationships
+    App -->|"Renders"| SearchBar
+    App -->|"Renders"| RecipeList
+    App -->|"Renders"| Filters
+    RecipeList -->|"Renders"| RecipeCard
+    App -->|"Uses"| ThemeManager
+    App -->|"Uses"| FavoriteManager
 
-  %% UI Component relationships
-  MainComponent -->|"Renders"| SearchBar
-  MainComponent -->|"Renders"| RecipeList
-  MainComponent -->|"Renders"| Filters
-  RecipeList -->|"Displays"| RecipeCard
-
-  %% State management
-  AppComponent -->|"Uses"| ThemeState
-  AppComponent -->|"Uses"| RecipeState
-  AppComponent -->|"Uses"| FilterState
-
-  %% External API interactions
-  AppComponent -->|"Triggers recipe fetch"| SpoonacularAPI
-  AppComponent -->|"Triggers nutrition fetch"| SpoonacularAPI
-
-  %% State to component relationships
-  RecipeState -->|"Updates"| RecipeList
-  FilterState -->|"Updates"| Filters
-  ThemeState -->|"Updates"| AppComponent
+    %% State relationships
+    SearchBar -->|"Updates"| RecipeState
+    Filters -->|"Updates"| FilterState
+    ThemeManager -->|"Updates"| ThemeState
+    RecipeCard -->|"Reads"| RecipeState
+    
+    %% External service interactions
+    App -->|"Fetches data"| SpoonacularAPI
+    FavoriteManager -->|"Persists favorites"| LocalStorage
+    
+    %% Build system relationships
+    Vite -->|"Builds"| App
+    TailwindCSS -->|"Styles"| App
 ```
 ---
