@@ -18,13 +18,13 @@ const RecipeCard = ({ recipe, toggleFavorite, isFavorite, onImageError }) => {
   const [imageError, setImageError] = useState(false);       // Detecta errores en la carga de la imagen
 
   // Manejador de errores para cuando una imagen no se puede cargar
-  const handleImageError = () => {
+  const handleImageError = React.useCallback(() => {
     setImageError(true);
     // Si se proporcionó un callback onImageError, notificamos al componente padre
     if (onImageError && typeof onImageError === 'function' && recipe) {
       onImageError(recipe);
     }
-  };
+  }, [setImageError, onImageError, recipe]);
 
   // Comprobamos si la imagen tiene problemas conocidos o características que indiquen que no es válida
   // SIEMPRE debemos declarar los hooks en el nivel superior, antes de cualquier return condicional
@@ -66,7 +66,7 @@ const RecipeCard = ({ recipe, toggleFavorite, isFavorite, onImageError }) => {
     };
     
     checkImageValidity();
-  }, [recipe, onImageError]); // Agregamos onImageError como dependencia
+  }, [recipe, onImageError, handleImageError]); // Agregamos todas las dependencias necesarias
 
   // Manejo de error si no hay datos de receta
   if (!recipe) {
