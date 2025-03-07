@@ -343,6 +343,19 @@ function App() {
                 } else if (filters.sort === 'calories') {
                     // Ordena de menor a mayor número de calorías
                     return (a.recipe.calories || 0) - (b.recipe.calories || 0);
+                } else if (filters.sort === 'difficulty') {
+                    // Función para convertir la dificultad a un valor numérico
+                    const difficultyToValue = (difficulty) => {
+                        switch(difficulty) {
+                            case 'Fácil': return 1;
+                            case 'Media': return 2;
+                            case 'Difícil': return 3;
+                            case 'Muy difícil': return 4;
+                            default: return 0;
+                        }
+                    };
+                    // Ordena de menor a mayor dificultad
+                    return difficultyToValue(a.recipe.difficulty || '') - difficultyToValue(b.recipe.difficulty || '');
                 }
                 return 0;  // Sin cambios si no hay criterio válido
             });
@@ -719,6 +732,43 @@ function App() {
                                            recipe.extendedIngredients.map(ing => ing.original || ing.originalString || ing.name || 'Ingrediente') :
                                            ['Ingredientes no disponibles'];
                     
+                    // Calculamos la dificultad estimada de la receta
+                    const calculateDifficulty = (recipe, ingredientLines) => {
+                        // Factores para calcular la dificultad
+                        const ingredientCount = ingredientLines.length;
+                        const preparationTime = recipe.readyInMinutes || 0;
+                        
+                        // Estimamos la dificultad basada en tiempo e ingredientes
+                        let difficultyScore = 0;
+                        
+                        // Factor 1: Tiempo de preparación
+                        if (preparationTime <= 15) difficultyScore += 1;
+                        else if (preparationTime <= 30) difficultyScore += 2;
+                        else if (preparationTime <= 60) difficultyScore += 3;
+                        else difficultyScore += 4;
+                        
+                        // Factor 2: Número de ingredientes
+                        if (ingredientCount <= 5) difficultyScore += 1;
+                        else if (ingredientCount <= 8) difficultyScore += 2;
+                        else if (ingredientCount <= 12) difficultyScore += 3;
+                        else difficultyScore += 4;
+                        
+                        // Complejidad basada en palabras clave en el título (opcional)
+                        const complexityKeywords = ['gourmet', 'complejo', 'sofisticado', 'elaborado', 'profesional', 'difícil', 'avanzado'];
+                        if (complexityKeywords.some(keyword => recipe.title.toLowerCase().includes(keyword))) {
+                            difficultyScore += 1;
+                        }
+                        
+                        // Determinar nivel de dificultad
+                        if (difficultyScore <= 3) return 'Fácil';
+                        else if (difficultyScore <= 5) return 'Media';
+                        else if (difficultyScore <= 7) return 'Difícil';
+                        else return 'Muy difícil';
+                    };
+                    
+                    // Obtener la dificultad
+                    const difficulty = calculateDifficulty(recipe, ingredientLines);
+                    
                     // Creamos el objeto de receta con el formato esperado por RecipeCard
                     const formattedRecipe = {
                         recipe: {
@@ -736,7 +786,8 @@ function App() {
                             },
                             healthLabels: healthLabels,
                             dietLabels: dietLabels,
-                            url: recipe.sourceUrl || recipe.spoonacularSourceUrl || ''
+                            url: recipe.sourceUrl || recipe.spoonacularSourceUrl || '',
+                            difficulty: difficulty // Agregamos la dificultad estimada
                         }
                     };
                     

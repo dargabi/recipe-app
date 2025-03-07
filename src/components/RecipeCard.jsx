@@ -13,6 +13,20 @@ import React, { useState, useEffect } from 'react';
 import { FaStar, FaRegStar, FaFire, FaUtensils, FaClock, FaUsers, FaLeaf, FaAppleAlt, FaBreadSlice, FaOilCan } from 'react-icons/fa';
 
 const RecipeCard = ({ recipe, toggleFavorite, isFavorite, onImageError }) => {
+  // Función para obtener el color de cada barra según la dificultad y posición
+  const getDifficultyBarColors = (difficulty, barPosition) => {
+    switch(difficulty) {
+      case 'Fácil':
+        return barPosition === 1 ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600';
+      case 'Media':
+        return barPosition <= 2 ? 'bg-yellow-500' : 'bg-gray-300 dark:bg-gray-600';
+      case 'Difícil':
+      case 'Muy difícil':
+        return 'bg-red-500';
+      default:
+        return 'bg-gray-300 dark:bg-gray-600';
+    }
+  };
   // Estados del componente - Definidos antes de cualquier lógica condicional (regla de hooks)
   const [showNutrition, setShowNutrition] = useState(false); // Controla la visibilidad del panel nutricional
   const [imageError, setImageError] = useState(false);       // Detecta errores en la carga de la imagen
@@ -131,6 +145,16 @@ const RecipeCard = ({ recipe, toggleFavorite, isFavorite, onImageError }) => {
               <FaFire className="text-red-500" /> {Math.round(recipe.calories)} cal
             </span>
           }
+          {recipe.difficulty && (
+            <span className="text-gray-600 dark:text-gray-400 text-sm flex items-center gap-1">
+              <div className="flex items-center gap-0.5">
+                <div className={`w-2 h-4 rounded-sm ${getDifficultyBarColors(recipe.difficulty, 1)}`}></div>
+                <div className={`w-2 h-5 rounded-sm ${getDifficultyBarColors(recipe.difficulty, 2)}`}></div>
+                <div className={`w-2 h-6 rounded-sm ${getDifficultyBarColors(recipe.difficulty, 3)}`}></div>
+              </div>
+              <span>{recipe.difficulty}</span>
+            </span>
+          )}
         </div>
 
         {recipe.healthLabels && recipe.healthLabels.length > 0 && (

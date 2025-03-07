@@ -242,6 +242,7 @@ function Filters({ onFilterChange, resetKey = 0 }) {
           <option value="">Sin ordenar</option>
           <option value="time">Tiempo de preparación</option>
           <option value="calories">Calorías</option>
+          <option value="difficulty">Dificultad</option>
         </select>
       </div>
       </div>
