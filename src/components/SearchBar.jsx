@@ -11,13 +11,18 @@
  * @param {boolean} isLoading - Indica si la aplicación está realizando una búsqueda actualmente.
  *                             Cuando es true, deshabilita el input y cambia el aspecto del botón.
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaSearch, FaSpinner, FaCarrot, FaUtensils } from 'react-icons/fa';
 
-const SearchBar = ({ onSearch, isLoading }) => {
+const SearchBar = ({ onSearch, isLoading, resetKey = 0 }) => {
 
     // Estado para manejar los ingredientes ingresados por el usuario
     const [ingredients, setIngredients] = useState('');
+    
+    // Efecto para resetear el campo cuando cambia resetKey
+    useEffect(() => {
+        setIngredients('');
+    }, [resetKey]);
 
     /**
      * Maneja el envío del formulario de búsqueda

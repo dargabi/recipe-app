@@ -11,7 +11,7 @@
  * @param {Function} onFilterChange - Función que se llama cuando cambia cualquier filtro.
  *                                    Recibe dos parámetros: el nombre del filtro y su valor.
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaFilter, FaSort, FaClock, FaLeaf, FaListOl, FaBan, FaRedo, FaTimes } from 'react-icons/fa';
 
 // Estilos comunes para los elementos select para evitar repetición
@@ -23,13 +23,24 @@ const selectStyle = {
   paddingRight: '30px'
 };
 
-function Filters({ onFilterChange }) {
+function Filters({ onFilterChange, resetKey = 0 }) {
   // Estados para todos los filtros
   const [excludedIngredients, setExcludedIngredients] = useState('');
   const [timeFilter, setTimeFilter] = useState('');
   const [dietFilter, setDietFilter] = useState('');
   const [maxIngredientsFilter, setMaxIngredientsFilter] = useState('');
   const [sortFilter, setSortFilter] = useState('');
+  
+  // Efecto para resetear todos los filtros cuando cambia resetKey
+  useEffect(() => {
+    setExcludedIngredients('');
+    setTimeFilter('');
+    setDietFilter('');
+    setMaxIngredientsFilter('');
+    setSortFilter('');
+    // También colapsar los filtros cuando se reinicia la aplicación
+    setIsExpanded(false);
+  }, [resetKey]);
   
   // Estado para controlar si los filtros están expandidos o colapsados
   const [isExpanded, setIsExpanded] = useState(false);

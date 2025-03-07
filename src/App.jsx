@@ -210,6 +210,9 @@ function App() {
     // Se establece cuando ocurre un problema con la API o el procesamiento de datos
     const [error, setError] = useState(null);
     
+    // Estado para reiniciar componentes como SearchBar y Filters
+    const [resetKey, setResetKey] = useState(0);
+    
     // Estado para controlar el tema visual de la aplicación (claro u oscuro)
     // Afecta a las clases CSS aplicadas a través de Tailwind
     const [theme, setTheme] = useState('light');
@@ -817,10 +820,29 @@ function App() {
             {/* CABECERA DE LA APLICACIÓN */}
             <header className="container mx-auto max-w-6xl mb-8">
                 <div className="flex flex-col md:flex-row justify-between items-center mb-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center mb-4 md:mb-0">
-                        <FaAppleAlt className="text-orange-500 mr-3 text-3xl animate-pulse-slow" />
-                        <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">Recipe-App by Gabriel</h1>
-                    </div>
+                    <div 
+                    className="flex items-center mb-4 md:mb-0 cursor-pointer hover:opacity-80 transition-all duration-300 group"
+                    onClick={() => {
+                        // Reiniciar la aplicación a su estado inicial
+                        setRecipes([]);
+                        setFilteredRecipes([]);
+                        setError(null);
+                        setShowFavorites(false);
+                        setFilters({
+                            time: '',
+                            diet: '',
+                            sort: '',
+                            excludedIngredients: '',
+                            maxIngredients: ''
+                        });
+                        // Incrementar resetKey para forzar el reinicio de componentes hijos
+                        setResetKey(prev => prev + 1);
+                    }}
+                    title="Reiniciar aplicación"
+                >
+                    <FaAppleAlt className="text-orange-500 mr-3 text-3xl animate-pulse-slow group-hover:scale-110 transition-transform duration-300" />
+                    <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">Recipe-App by Gabriel</h1>
+                </div>
                     <div className="flex items-center gap-3">
                         <button 
                             onClick={handleToggleFavorites}
@@ -852,9 +874,9 @@ function App() {
                 {/* PANEL DE BÚSQUEDA Y FILTROS */}
                 <div className="mb-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transition-all duration-300">
                     {/* SearchBar: Componente para buscar recetas por ingredientes */}
-                    <SearchBar onSearch={searchRecipes} isLoading={isLoading} />
+                    <SearchBar onSearch={searchRecipes} isLoading={isLoading} resetKey={resetKey} />
                     {/* Filters: Componente para aplicar filtros adicionales a los resultados */}
-                    <Filters onFilterChange={handleFilterChange} />
+                    <Filters onFilterChange={handleFilterChange} resetKey={resetKey} />
                 </div>
                 
                 {/* MENSAJES DE ERROR: Visualización de errores con información contextual */}
