@@ -24,8 +24,20 @@ const selectStyle = {
 };
 
 function Filters({ onFilterChange }) {
-  // Estado para almacenar los ingredientes que el usuario desea excluir
+  // Estados para todos los filtros
   const [excludedIngredients, setExcludedIngredients] = useState('');
+  const [timeFilter, setTimeFilter] = useState('');
+  const [dietFilter, setDietFilter] = useState('');
+  const [maxIngredientsFilter, setMaxIngredientsFilter] = useState('');
+  const [sortFilter, setSortFilter] = useState('');
+  
+  // Estado para controlar si los filtros están expandidos o colapsados
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  // Función para alternar entre expandido y colapsado
+  const toggleFilters = () => {
+    setIsExpanded(!isExpanded);
+  };
 
   /**
    * Gestiona el envío del formulario de ingredientes excluidos
@@ -37,11 +49,41 @@ function Filters({ onFilterChange }) {
   };
   
   /**
+   * Manejadores para cada tipo de filtro
+   */
+  const handleTimeFilterChange = (value) => {
+    setTimeFilter(value);
+    onFilterChange('time', value);
+  };
+  
+  const handleDietFilterChange = (value) => {
+    setDietFilter(value);
+    onFilterChange('diet', value);
+  };
+  
+  const handleMaxIngredientsFilterChange = (value) => {
+    setMaxIngredientsFilter(value);
+    onFilterChange('maxIngredients', value);
+  };
+  
+  const handleSortFilterChange = (value) => {
+    setSortFilter(value);
+    onFilterChange('sort', value);
+  };
+  
+  /**
    * Limpia todos los filtros, restaurando sus valores a los predeterminados
    * y reiniciando el estado local
    */
   const clearAllFilters = () => {
+    // Resetear todos los estados locales
     setExcludedIngredients('');
+    setTimeFilter('');
+    setDietFilter('');
+    setMaxIngredientsFilter('');
+    setSortFilter('');
+    
+    // Notificar al componente padre
     onFilterChange('excludedIngredients', '');
     onFilterChange('time', '');
     onFilterChange('diet', '');
@@ -51,16 +93,35 @@ function Filters({ onFilterChange }) {
 
   return (
     <div className="flex flex-col gap-4 p-0">
-      {/* Encabezado con título y botón para limpiar filtros */}
-      <div className="flex items-center justify-between mb-4">
+      {/* Encabezado con título y botón para expandir/colapsar */}
+      <div 
+        className="flex items-center justify-between mb-4 p-3 bg-orange-50 dark:bg-gray-800 rounded-lg shadow-sm border border-orange-100 dark:border-gray-700 cursor-pointer transition-all hover:bg-orange-100 dark:hover:bg-gray-700" 
+        onClick={toggleFilters}
+      >
         <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
           <FaFilter className="text-orange-500" /> 
           Filtros avanzados
         </h3>
+        <div className="flex items-center gap-2">
+          {isExpanded ? (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          )}
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            {isExpanded ? 'Ocultar filtros' : 'Mostrar filtros'}
+          </span>
+        </div>
       </div>
       
-      {/* Grid con los filtros de búsqueda */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+      {/* Grid con los filtros de búsqueda - visible solo cuando está expandido */}
+      <div 
+        className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full transition-all duration-300 ease-in-out overflow-hidden ${isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}
+      >
         {/* Filtro de tiempo de preparación */}
         <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
           <label htmlFor="time-filter" className="flex items-center gap-2 font-medium text-gray-700 dark:text-gray-300 text-sm mb-2">
@@ -69,7 +130,8 @@ function Filters({ onFilterChange }) {
           </label>
           <select
             id="time-filter"
-            onChange={(e) => onFilterChange('time', e.target.value)}
+            value={timeFilter}
+            onChange={(e) => handleTimeFilterChange(e.target.value)}
             className="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white text-sm cursor-pointer transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent appearance-none"
             style={selectStyle}
           >
@@ -88,7 +150,8 @@ function Filters({ onFilterChange }) {
         </label>
         <select
           id="diet-filter"
-          onChange={(e) => onFilterChange('diet', e.target.value)}
+          value={dietFilter}
+          onChange={(e) => handleDietFilterChange(e.target.value)}
           className="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white text-sm cursor-pointer transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent appearance-none"
           style={selectStyle}
         >
@@ -108,7 +171,8 @@ function Filters({ onFilterChange }) {
         </label>
         <select
           id="max-ingredients-filter"
-          onChange={(e) => onFilterChange('maxIngredients', e.target.value)}
+          value={maxIngredientsFilter}
+          onChange={(e) => handleMaxIngredientsFilterChange(e.target.value)}
           className="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white text-sm cursor-pointer transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent appearance-none"
           style={selectStyle}
         >
@@ -159,7 +223,8 @@ function Filters({ onFilterChange }) {
         </label>
         <select
           id="sort-filter"
-          onChange={(e) => onFilterChange('sort', e.target.value)}
+          value={sortFilter}
+          onChange={(e) => handleSortFilterChange(e.target.value)}
           className="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white text-sm cursor-pointer transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent appearance-none"
           style={selectStyle}
         >
@@ -170,12 +235,13 @@ function Filters({ onFilterChange }) {
       </div>
       </div>
       
-      {/* Botón adicional para limpiar todos los filtros (redundante con el botón superior) */}
-      <div className="flex justify-center w-full mt-6">
+      {/* Botón adicional para limpiar todos los filtros - visible solo cuando está expandido */}
+      <div className={`flex justify-center w-full mt-6 transition-all duration-300 ease-in-out ${isExpanded ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}>
         <button 
           className="button-secondary py-2.5 px-5 flex items-center gap-2 whitespace-nowrap transition-all duration-300"
           onClick={clearAllFilters}
           aria-label="Limpiar todos los filtros"
+          disabled={!isExpanded}
         >
           <FaTimes className="text-sm" />
           Limpiar filtros
